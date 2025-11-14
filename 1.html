@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人网站 - GitHub Pages示例</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #6e48aa;
+            --secondary: #9d50bb;
+            --accent: #4776E6;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .tagline {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        h2 i {
+            margin-right: 10px;
+        }
+        
+        .profile {
+            text-align: center;
+        }
+        
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .skill {
+            background: #eef2ff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .skill:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .project {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .project:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .project h3 {
+            color: var(--dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .project h3 i {
+            margin-right: 8px;
+            color: var(--accent);
+        }
+        
+        .project-links {
+            margin-top: 10px;
+        }
+        
+        .project-link {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+        
+        .project-link:hover {
+            background: var(--primary);
+        }
+        
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .contact-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .contact-link:hover {
+            background: var(--accent);
+            transform: scale(1.1);
+        }
+        
+        .deployment-guide {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+        
+        .steps {
+            margin: 20px 0;
+            counter-reset: step-counter;
+        }
+        
+        .step {
+            margin-bottom: 25px;
+            padding-left: 50px;
+            position: relative;
+        }
+        
+        .step:before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 35px;
+            height: 35px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            opacity: 0.8;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>我的个人网站</h1>
+            <p class="tagline">这是一个通过GitHub Pages部署的示例网站 - 完全免费且易于设置</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="card profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>关于我</h2>
+                <p>你好！我是一名前端开发者，热爱创造美观且功能强大的网站。这个网站是通过GitHub Pages部署的，完全免费！</p>
+                <p>GitHub Pages是一个静态网站托管服务，可以直接从GitHub仓库提供网页服务，无需服务器配置。</p>
+                
+                <div class="contact-links">
+                    <a href="#" class="contact-link"><i class="fab fa-github"></i></a>
+                    <a href="#" class="contact-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="contact-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="contact-link"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-laptop-code"></i> 我的技能</h2>
+                <div class="skills">
+                    <span class="skill">HTML5</span>
+                    <span class="skill">CSS3</span>
+                    <span class="skill">JavaScript</span>
+                    <span class="skill">Git</span>
+                    <span class="skill">GitHub</span>
+                    <span class="skill">响应式设计</span>
+                    <span class="skill">UI/UX设计</span>
+                    <span class="skill">Web性能优化</span>
+                </div>
+                
+                <h2 style="margin-top: 30px;"><i class="fas fa-project-diagram"></i> 项目展示</h2>
+                <div class="project">
+                    <h3><i class="fas fa-star"></i> 个人作品集网站</h3>
+                    <p>使用HTML、CSS和JavaScript创建的响应式作品集网站，展示我的项目和技能。</p>
+                    <div class="project-links">
+                        <a href="#" class="project-link">查看演示</a>
+                        <a href="#" class="project-link">源代码</a>
+                    </div>
+                </div>
+                <div class="project">
+                    <h3><i class="fas fa-shopping-cart"></i> 电商网站模板</h3>
+                    <p>一个现代化的电商网站前端模板，具有产品展示、购物车和结账功能。</p>
+                    <div class="project-links">
+                        <a href="#" class="project-link">查看演示</a>
+                        <a href="#" class="project-link">源代码</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="deployment-guide">
+            <h2><i class="fas fa-rocket"></i> GitHub Pages 部署指南</h2>
+            <p>按照以下步骤，你也可以免费部署自己的网站：</p>
+            
+            <div class="steps">
+                <div class="step">
+                    <h3>创建GitHub账户</h3>
+                    <p>如果你还没有GitHub账户，请先访问 <a href="https://github.com" target="_blank">GitHub官网</a> 注册一个免费账户。</p>
+                </div>
+                
+                <div class="step">
+                    <h3>创建新仓库</h3>
+                    <p>登录GitHub后，点击右上角的"+"号，选择"New repository"。给你的仓库命名（例如：my-website），并选择"Public"。</p>
+                </div>
+                
+                <div class="step">
+                    <h3>上传网页文件</h3>
+                    <p>在仓库页面，点击"Add file" → "Upload files"，将你的HTML、CSS、JS等文件拖拽到指定区域。确保主页面命名为<code>index.html</code>。</p>
+                </div>
+                
+                <div class="step">
+                    <h3>启用GitHub Pages</h3>
+                    <p>进入仓库的"Settings"选项卡，在左侧菜单中找到"Pages"。在"Source"部分，选择分支（通常是main或master），然后点击"Save"。</p>
+                </div>
+                
+                <div class="step">
+                    <h3>访问你的网站</h3>
+                    <p>稍等片刻，你的网站就会发布在：<code>https://你的用户名.github.io/仓库名</code></p>
+                </div>
+            </div>
+            
+            <button id="deployBtn" class="btn btn-large"><i class="fas fa-rocket"></i> 立即尝试部署</button>
+            
+            <div id="successMessage" class="success-message">
+                <p><i class="fas fa-check-circle"></i> 恭喜！你的网站已成功部署！</p>
+                <p>现在你可以通过提供的URL访问你的网站了。</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2023 我的个人网站 | 由GitHub Pages提供托管服务</p>
+            <p>本网站仅作为GitHub Pages部署示例</p>
+        </footer>
+    </div>
+
+    <script>
+        // 部署按钮交互
+        document.getElementById('deployBtn').addEventListener('click', function() {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            
+            // 滚动到成功消息
+            successMessage.scrollIntoView({ behavior: 'smooth' });
+            
+            // 更改按钮文本和状态
+            this.innerHTML = '<i class="fas fa-check"></i> 已部署成功';
+            this.style.background = 'var(--success)';
+            this.disabled = true;
+        });
+        
+        // 添加卡片动画效果
+        const cards = document.querySelectorAll('.card');
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        cards.forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s, transform 0.5s';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
