@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彼岸花 - Lycoris</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #0a0508; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <script>
+        let flowers = [];
+        let particles = [];
+        
+        class Lycoris {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.petals = [];
+                this.numPetals = 6 + floor(random(4));
+                this.bloomPhase = 0;
+                this.maxSize = 40 + random(60);
+                this.colorPhase = random(1);
+                this.delay = random(1);
+                this.rotation = random(TWO_PI);
+                
+                for (let i = 0; i < this.numPetals; i++) {
+                    this.petals.push({
+                        angle: (TWO_PI / this.numPetals) * i,
+                        curve: random(0.3, 0.7),
+                        wave: random(1, 3),
+                        length: this.maxSize * random(0.8, 1.2)
+                    });
+                }
+            }
+            
+            update() {
+                if (this.delay > 0) {
+                    this.delay -= 0.02;
+                    return;
+                }
+                this.bloomPhase += 0.015;
+                this.colorPhase += 0.01;
+            }
+            
+            display() {
+                if (this.delay > 0) return;
+                
+                push();
+                translate(this.x, this.y);
+                rotate(this.rotation);
+                
+                let bloom = min(this.bloomPhase * 2, 1);
+                
+                for (let petal of this.petals) {
+                    this.drawPetal(petal, bloom);
+                }
+                
+                this.drawStamen();
+                pop();
+            }
+            
+            drawPetal(petal, bloom) {
+                push();
+                rotate(petal.angle);
+                
+                let len = petal.length * bloom;
+                let colorT = sin(this.colorPhase + petal.angle * 0.5) * 0.5 + 0.5;
+                let r = lerp(200, 255, colorT);
+                let g = lerp(30, 80, colorT);
+                let b = lerp(50, 100, colorT);
+                
+                noStroke();
+                fill(r, g, b, 220);
+                
+                beginShape();
+                let baseWidth = 15;
+                let w = baseWidth;
+                let baseY = 10;
+                
+                for (let t = 0; t <= 1; t += 0.05) {
+                    let y = -t * len;
+                    let wave = sin(t * PI * petal.wave + frameCount * 0.02) * 5 * (1 - t * 0.5);
+                    let x = wave - w * (1 - t * 0.5) * petal.curve;
+                    vertex(x, y + baseY);
+                }
+                for (let t = 1; t >= 0; t -= 0.05) {
+                    let y = -t * len;
+                    let wave = sin(t * PI * petal.wave + frameCount * 0.02) * 5 * (1 - t * 0.5);
+                    let x = wave + w * (1 - t * 0.5) * (1 - petal.curve);
+                    vertex(x, y + baseY);
+                }
+                endShape(CLOSE);
+                
+                fill(r + 30, g + 20, b + 20, 100);
+                beginShape();
+                baseWidth = 5;
+                for (let t = 0.2; t <= 1; t += 0.05) {
+                    let y = -t * len;
+                    let wave = sin(t * PI * petal.wave + frameCount * 0.02) * 5 * (1 - t * 0.5);
+                    let x = wave - baseWidth * (1 - t * 0.5) * petal.curve;
+                    vertex(x, y + baseY);
+                }
+                for (let t = 1; t >= 0.2; t -= 0.05) {
+                    let y = -t * len;
+                    let wave = sin(t * PI * petal.wave + frameCount * 0.02) * 5 * (1 - t * 0.5); let x = wave;
+                    vertex(x, y + baseY);
+                }
+                endShape(CLOSE);
+                
+                pop();
+            }
+            
+            drawStamen() {
+                let bloom = min(this.bloomPhase * 2, 1);
+                let stamenCount = 5 + floor(random(4));
+                
+                for (let i = 0; i < stamenCount; i++) {
+                    let angle = (TWO_PI / stamenCount) * i + frameCount * 0.005;
+                    let len = (this.maxSize * 0.4 + sin(i + frameCount * 0.03) * 10) * bloom;
+                    
+                    push();
+                    rotate(angle);
+                    stroke(255, 200, 0, 180);
+                    strokeWeight(2);
+                    line(0, 0, 0, -len);
+                    fill(255, 220, 100, 200);
+                    noStroke();
+                    ellipse(0, -len, 6, 8);
+                    pop();
+                }
+            }
+        }
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = random(width);
+                this.y = height + 50;
+                this.vx = random(-1, 1);
+                this.vy = -random(1, 3);
+                this.size = random(2, 6);
+                this.life = 1;
+                this.color = [random(180, 255), random(40, 100), random(60, 120)];
+            }
+            update() {
+                this.x += this.vx + sin(this.y * 0.02) * 0.5;
+                this.y += this.vy;
+                this.life -= 0.003;
+            }
+            display() {
+                fill(this.color[0], this.color[1], this.color[2], this.life * 255);
+                noStroke();
+                ellipse(this.x, this.y, this.size, this.size);
+            }
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            
+            for (let i = 0; i < 3; i++) {
+                let x = random(width * 0.2, width * 0.8);
+                let y = random(height * 0.4, height * 0.7);
+                flowers.push(new Lycoris(x, y));
+            }
+            
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function draw() {
+            drawBackground();
+            updateAndDisplayParticles();
+            updateAndDisplayFlowers();
+            
+            if (flowers.length < 5 && random() < 0.005) {
+                let x = random(width * 0.2, width * 0.8);
+                let y = random(height * 0.4, height * 0.7);
+                flowers.push(new Lycoris(x, y));
+            }
+        }
+        
+        function drawBackground() {
+            for (let y = 0; y < height; y++) {
+                let t = y / height;
+                let r = 10 + t * 20;
+                let g = 5 + t * 10;
+                let b = 8 + t * 15;
+                stroke(r, g, b);
+                line(0, y, width, y);
+            }
+            
+            for (let i = 0; i < 150; i++) {
+                let x = noise(i * 0.1, frameCount * 0.0005) * width;
+                let y = noise(i * 0.2 + 100, frameCount * 0.0003) * height;
+                let b = 100 + sin(i + frameCount * 0.02) * 50;
+                fill(255, 250, 245, b * 0.3);
+                noStroke();
+                ellipse(x, y, 1.5, 1.5);
+            }
+        }
+        
+        function updateAndDisplayParticles() {
+            for (let p of particles) {
+                p.update();
+                p.display();
+                if (p.isDead()) {
+                    p.reset();
+                }
+            }
+        }
+        
+        function updateAndDisplayFlowers() {
+            for (let f of flowers) {
+                f.update();
+                f.display();
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
