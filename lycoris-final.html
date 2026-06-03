@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曼珠沙华 - 彼岸花</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #0a0508; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <script>
+        let flowers = [];
+        let bokeh = [];
+        
+        class Lycoris {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.petals = [];
+                this.stamens = [];
+                this.stemY = y + 150;
+                this.bloomPhase = 0;
+                this.maxSize = 80 + random(60);
+                this.rotation = random(TWO_PI);
+                this.numPetals = 8 + floor(random(5));
+                
+                for (let i = 0; i < this.numPetals; i++) {
+                    this.petals.push({
+                        angle: (TWO_PI / this.numPetals) * i + random(-0.2, 0.2),
+                        wavePhase: random(TWO_PI),
+                        lengthMult: random(0.8, 1.3),
+                        twist: random(-0.8, 0.8),
+                        curlAmount: random(0.6, 1.2)
+                    });
+                }
+                
+                this.numStamens = 8 + floor(random(4));
+                for (let i = 0; i < this.numStamens; i++) {
+                    this.stamens.push({
+                        angle: (TWO_PI / this.numStamens) * i + random(-0.4, 0.4),
+                        length: this.maxSize * (1.4 + random(0.6)),
+                        antherSize: random(3, 5),
+                        curl: random(-0.5, 0.5)
+                    });
+                }
+            }
+            
+            update() {
+                this.bloomPhase += 0.008;
+            }
+            
+            display() {
+                push();
+                translate(this.x, this.y);
+                rotate(this.rotation);
+                
+                let bloom = min(this.bloomPhase, 1);
+                
+                this.drawStem(bloom);
+                
+                for (let stamen of this.stamens) {
+                    this.drawStamen(stamen, bloom);
+                }
+                
+                for (let petal of this.petals) {
+                    this.drawPetal(petal, bloom);
+                }
+                
+                pop();
+            }
+            
+            drawStem(bloom) {
+                let stemLength = 120 + this.maxSize * 0.3;
+                
+                stroke(30, 60, 40, 200);
+                strokeWeight(5);
+                noFill();
+                
+                beginShape();
+                for (let t = 0; t <= 1; t += 0.05) {
+                    let y = t * stemLength * bloom;
+                    let x = sin(t * PI) * 5;
+                    vertex(x, y);
+                }
+                endShape();
+            }
+            
+            drawPetal(petal, bloom) {
+                push();
+                rotate(petal.angle);
+                
+                let len = this.maxSize * petal.lengthMult * bloom;
+                let wave = sin(frameCount * 0.015 + petal.wavePhase) * 12;
+                
+                noStroke();
+                
+                fill(240, 40, 60, 255);
+                
+                beginShape();
+                for (let t = 0; t <= 1; t += 0.02) {
+                    let y = -t * len;
+                    let r = t * len;
+                    let theta = t * PI * 2.5 * petal.curlAmount + frameCount * 0.005 * petal.twist;
+                    let x = r * cos(theta) + wave * t * t;
+                    
+                    let w = 8 + sin(t * PI) * 12;
+                    let perpAngle = theta + PI / 2;
+                    
+                    let nx = x + cos(perpAngle) * w * 0.5;
+                    let ny = y + sin(perpAngle) * w * 0.5;
+                    vertex(nx, ny);
+                }
+                for (let t = 1; t >= 0; t -= 0.02) {
+                    let y = -t * len;
+                    let r = t * len;
+                    let theta = t * PI * 2.5 * petal.curlAmount + frameCount * 0.005 * petal.twist;
+                    let x = r * cos(theta) + wave * t * t;
+                    
+                    let w = 8 + sin(t * PI) * 12;
+                    let perpAngle = theta - PI / 2;
+                    
+                    let nx = x + cos(perpAngle) * w * 0.5;
+                    let ny = y + sin(perpAngle) * w * 0.5;
+                    vertex(nx, ny);
+                }
+                endShape(CLOSE);
+                
+                fill(255, 220, 230, 120);
+                beginShape();
+                for (let t = 0.2; t <= 0.85; t += 0.03) {
+                    let y = -t * len;
+                    let r = t * len;
+                    let theta = t * PI * 2.5 * petal.curlAmount + frameCount * 0.005 * petal.twist;
+                    let x = r * cos(theta) + wave * t * t;
+                    
+                    let w = 2 + sin(t * PI) * 4;
+                    let perpAngle = theta + PI / 2;
+                    
+                    let nx = x + cos(perpAngle) * w * 0.5;
+                    let ny = y + sin(perpAngle) * w * 0.5;
+                    vertex(nx, ny);
+                }
+                for (let t = 0.85; t >= 0.2; t -= 0.03) {
+                    let y = -t * len;
+                    let r = t * len;
+                    let theta = t * PI * 2.5 * petal.curlAmount + frameCount * 0.005 * petal.twist;
+                    let x = r * cos(theta) + wave * t * t;
+                    
+                    let w = 2 + sin(t * PI) * 4;
+                    let perpAngle = theta - PI / 2;
+                    
+                    let nx = x + cos(perpAngle) * w * 0.5;
+                    let ny = y + sin(perpAngle) * w * 0.5;
+                    vertex(nx, ny);
+                }
+                endShape(CLOSE);
+                
+                pop();
+            }
+            
+            drawStamen(stamen, bloom) {
+                push();
+                rotate(stamen.angle);
+                
+                let len = stamen.length * bloom;
+                
+                stroke(245, 70, 85, 230);
+                strokeWeight(1.8);
+                noFill();
+                
+                beginShape();
+                for (let t = 0; t <= 1; t += 0.05) {
+                    let y = -t * len;
+                    let r = t * len * 0.3;
+                    let theta = t * PI * 1.5 + frameCount * 0.01 * stamen.curl;
+                    let x = r * sin(theta);
+                    vertex(x, y + 20);
+                }
+                endShape();
+                
+                let tipT = 0.95;
+                let tipY = -tipT * len + 20;
+                let tipX = tipT * len * 0.3 * sin(tipT * PI * 1.5 + frameCount * 0.01 * stamen.curl);
+                
+                fill(255, 200, 100, 240);
+                noStroke();
+                ellipse(tipX, tipY, stamen.antherSize * 2, stamen.antherSize * 3);
+                
+                fill(255, 180, 60, 150);
+                for (let i = 0; i < 8; i++) {
+                    let px = tipX + random(-5, 5);
+                    let py = tipY + random(-6, 6);
+                    ellipse(px, py, 1.2, 1.8);
+                }
+                
+                pop();
+            }
+        }
+        
+        class Bokeh {
+            constructor() {
+                this.x = random(width);
+                this.y = random(height);
+                this.size = random(20, 120);
+                this.color = [random(60, 255), random(30, 150), random(50, 200)];
+                this.alpha = random(30, 120);
+                this.phase = random(TWO_PI);
+            }
+            display() {
+                let a = this.alpha + sin(frameCount * 0.01 + this.phase) * 30;
+                fill(this.color[0], this.color[1], this.color[2], a);
+                noStroke();
+                ellipse(this.x, this.y, this.size, this.size);
+            }
+        }
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            
+            for (let i = 0; i < 30; i++) {
+                bokeh.push(new Bokeh());
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                let x = random(width * 0.2, width * 0.8);
+                let y = random(height * 0.3, height * 0.5);
+                flowers.push(new Lycoris(x, y));
+            }
+        }
+        
+        function draw() {
+            drawBackground();
+            
+            for (let b of bokeh) {
+                b.display();
+            }
+            
+            for (let f of flowers) {
+                f.update();
+                f.display();
+            }
+            
+            if (flowers.length < 5 && random() < 0.005) {
+                let x = random(width * 0.2, width * 0.8);
+                let y = random(height * 0.3, height * 0.5);
+                flowers.push(new Lycoris(x, y));
+            }
+        }
+        
+        function drawBackground() {
+            for (let y = 0; y < height; y++) {
+                let t = y / height;
+                let r = 8 + t * 15;
+                let g = 5 + t * 20;
+                let b = 10 + t * 25;
+                stroke(r, g, b);
+                line(0, y, width, y);
+            }
+            
+            for (let i = 0; i < 150; i++) {
+                let x = noise(i * 0.1, frameCount * 0.0004) * width;
+                let y = noise(i * 0.15 + 500, frameCount * 0.0003) * height;
+                let b = 70 + sin(i + frameCount * 0.018) * 50;
+                fill(255, 250, 245, b * 0.25);
+                noStroke();
+                ellipse(x, y, 1.2, 1.2);
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
