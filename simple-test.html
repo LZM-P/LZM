@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>彼岸花开 - 测试版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body { margin: 0; background: #0a0508; }
+        canvas { display: block; }
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #DC143C;
+            font-family: serif;
+            font-size: 36px;
+            text-shadow: 0 0 20px rgba(220,20,60,0.5);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">🌺 彼岸花开</div>
+    <script>
+        let flowers = [];
+        let petals = [];
+        
+        class Flower {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.petals = floor(random(5, 9));
+                this.phase = 0;
+                this.maxSize = random(40, 80);
+                this.color = [random(150, 255), random(20, 60), random(40, 80)];
+            }
+            update() {
+                this.phase += 0.02;
+            }
+            display() {
+                push();
+                translate(this.x, this.y);
+                
+                for (let i = 0; i < this.petals; i++) {
+                    let angle = (TWO_PI / this.petals) * i;
+                    push();
+                    rotate(angle);
+                    
+                    let size = min(this.phase * 2, 1) * this.maxSize;
+                    
+                    fill(this.color[0], this.color[1], this.color[2], 200);
+                    noStroke();
+                    
+                    beginShape();
+                    bezierVertex(-15, 10, -10, -size*0.5, 0, -size);
+                    bezierVertex(10, -size*0.5, 15, 10, 0, 10);
+                    endShape(CLOSE);
+                    
+                    pop();
+                }
+                
+                fill(255, 200, 0, 200);
+                ellipse(0, 0, 15, 15);
+                pop();
+            }
+        }
+        
+        class FallingPetal {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = random(-1, 1);
+                this.vy = random(0.5, 2);
+                this.rot = random(TWO_PI);
+                this.rotSpeed = random(-0.05, 0.05);
+                this.size = random(20, 40);
+                this.color = [random(180, 255), random(30, 80), random(50, 100)];
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rot += this.rotSpeed;
+                this.vx += sin(this.y * 0.01) * 0.1;
+            }
+            display() {
+                push();
+                translate(this.x, this.y);
+                rotate(this.rot);
+                
+                fill(this.color[0], this.color[1], this.color[2], 150);
+                noStroke();
+                
+                beginShape();
+                bezierVertex(-10, 5, -8, -this.size*0.4, 0, -this.size);
+                bezierVertex(8, -this.size*0.4, 10, 5, 0, 5);
+                endShape(CLOSE);
+                
+                pop();
+            }
+            isDead() {
+                return this.y > height + 50;
+            }
+        }
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            for (let i = 0; i < 5; i++) {
+                flowers.push(new Flower(random(width*0.1, width*0.9), random(height*0.1, height*0.6)));
+            }
+        }
+        
+        function draw() {
+            for (let y = 0; y < height; y++) {
+                let t = map(y, 0, height, 0, 1);
+                stroke(10 + t*16, 5 + t*5, 8 + t*13);
+                line(0, y, width, y);
+            }
+            
+            for (let i = 0; i < 80; i++) {
+                let x = noise(i*0.2, frameCount*0.001) * width;
+                let y = noise(i*0.1 + 100, frameCount*0.001) * height;
+                fill(255, 250, 240, 50 + sin(frameCount*0.02 + i) * 30);
+                noStroke();
+                ellipse(x, y, 2, 2);
+            }
+            
+            for (let f of flowers) {
+                f.update();
+                f.display();
+                
+                if (f.phase > 3 && random() < 0.1) {
+                    petals.push(new FallingPetal(f.x + random(-30, 30), f.y + random(-20, 20)));
+                }
+            }
+            
+            for (let i = petals.length - 1; i >= 0; i--) {
+                petals[i].update();
+                petals[i].display();
+                if (petals[i].isDead()) {
+                    petals.splice(i, 1);
+                }
+            }
+            
+            if (flowers.length < 6 && random() < 0.01) {
+                flowers.push(new Flower(random(width*0.1, width*0.9), random(height*0.1, height*0.6)));
+            }
+            
+            if (random() < 0.002) {
+                let mx = random(width);
+                stroke(255, 215, 0, 200);
+                strokeWeight(2);
+                line(mx, 0, mx + 100, 200);
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
