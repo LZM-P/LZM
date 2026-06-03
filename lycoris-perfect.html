@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彼岸花 - Lycoris Radiata</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #0a0512; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <script>
+        let flower;
+        let bokeh = [];
+        
+        class Lycoris {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.petals = [];
+                this.stamens = [];
+                this.bloomPhase = 0;
+                this.maxSize = 120;
+                
+                for (let i = 0; i < 10; i++) {
+                    this.petals.push({
+                        angle: (TWO_PI / 10) * i,
+                        lengthMult: 0.9 + random(0.2),
+                        waveAmp: 8 + random(6)
+                    });
+                }
+                
+                for (let i = 0; i < 10; i++) {
+                    this.stamens.push({
+                        angle: (TWO_PI / 10) * i + random(-0.3, 0.3),
+                        lengthMult: 1.4 + random(0.3)
+                    });
+                }
+            }
+            
+            update() {
+                this.bloomPhase += 0.008;
+            }
+            
+            display() {
+                push();
+                translate(this.x, this.y);
+                
+                let bloom = min(this.bloomPhase, 1);
+                
+                this.drawStem(bloom);
+                
+                for (let stamen of this.stamens) {
+                    this.drawStamen(stamen, bloom);
+                }
+                
+                for (let petal of this.petals) {
+                    this.drawPetal(petal, bloom);
+                }
+                
+                pop();
+            }
+            
+            drawStem(bloom) {
+                stroke(30, 70, 40, 200);
+                strokeWeight(4);
+                line(0, 0, 0, 150 * bloom);
+            }
+            
+            drawPetal(petal, bloom) {
+                push();
+                rotate(petal.angle);
+                
+                let len = this.maxSize * petal.lengthMult * bloom;
+                
+                noStroke();
+                fill(230, 30, 50, 255);
+                
+                beginShape();
+                
+                for (let t = 0; t <= 1; t += 0.02) {
+                    let y = -t * len;
+                    let x = sin(t * PI * 2.2 + frameCount * 0.02) * petal.waveAmp * t 
+                            + sin(t * PI) * 30 * t;
+                    let w = 8 + sin(t * PI) * 15;
+                    vertex(x - w, y);
+                }
+                
+                for (let t = 1; t >= 0; t -= 0.02) {
+                    let y = -t * len;
+                    let x = sin(t * PI * 2.2 + frameCount * 0.02) * petal.waveAmp * t 
+                            + sin(t * PI) * 30 * t;
+                    let w = 8 + sin(t * PI) * 15;
+                    vertex(x + w, y);
+                }
+                
+                endShape(CLOSE);
+                
+                fill(255, 230, 235, 100);
+                beginShape();
+                
+                for (let t = 0.25; t <= 0.85; t += 0.03) {
+                    let y = -t * len;
+                    let x = sin(t * PI * 2.2 + frameCount * 0.02) * petal.waveAmp * t 
+                            + sin(t * PI) * 30 * t;
+                    let w = 3 + sin(t * PI) * 5;
+                    vertex(x - w, y);
+                }
+                
+                for (let t = 0.85; t >= 0.25; t -= 0.03) {
+                    let y = -t * len;
+                    let x = sin(t * PI * 2.2 + frameCount * 0.02) * petal.waveAmp * t 
+                            + sin(t * PI) * 30 * t;
+                    let w = 3 + sin(t * PI) * 5;
+                    vertex(x + w, y);
+                }
+                
+                endShape(CLOSE);
+                
+                pop();
+            }
+            
+            drawStamen(stamen, bloom) {
+                push();
+                rotate(stamen.angle);
+                
+                let len = this.maxSize * stamen.lengthMult * bloom;
+                
+                stroke(245, 70, 85, 230);
+                strokeWeight(1.5);
+                noFill();
+                
+                beginShape();
+                for (let t = 0; t <= 1; t += 0.1) {
+                    let y = -t * len;
+                    let x = sin(t * PI * 1.6) * 25 * t * t;
+                    vertex(x, y + 10);
+                }
+                endShape();
+                
+                let tipT = 0.96;
+                let tipY = -tipT * len + 10;
+                let tipX = sin(tipT * PI * 1.6) * 25 * tipT * tipT;
+                
+                fill(255, 190, 85, 245);
+                noStroke();
+                ellipse(tipX, tipY, 5, 8);
+                
+                fill(255, 170, 50, 140);
+                for (let i = 0; i < 12; i++) {
+                    let px = tipX + random(-6, 6);
+                    let py = tipY + random(-10, 10);
+                    ellipse(px, py, 1.2, 2.2);
+                }
+                
+                pop();
+            }
+        }
+        
+        class Bokeh {
+            constructor() {
+                this.x = random(width);
+                this.y = random(height);
+                this.size = random(40, 180);
+                this.color = [random(60, 255), random(40, 200), random(70, 240)];
+                this.alpha = random(50, 160);
+                this.phase = random(TWO_PI);
+            }
+            display() {
+                let a = this.alpha + sin(frameCount * 0.01 + this.phase) * 40;
+                fill(this.color[0], this.color[1], this.color[2], a);
+                noStroke();
+                ellipse(this.x, this.y, this.size, this.size);
+            }
+        }
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            
+            for (let i = 0; i < 40; i++) {
+                bokeh.push(new Bokeh());
+            }
+            
+            flower = new Lycoris(width * 0.5, height * 0.35);
+        }
+        
+        function draw() {
+            drawBackground();
+            
+            for (let b of bokeh) {
+                b.display();
+            }
+            
+            flower.update();
+            flower.display();
+        }
+        
+        function drawBackground() {
+            for (let y = 0; y < height; y++) {
+                let t = y / height;
+                let r = 8 + t * 15;
+                let g = 5 + t * 20;
+                let b = 18 + t * 28;
+                stroke(r, g, b);
+                line(0, y, width, y);
+            }
+            
+            for (let i = 0; i < 220; i++) {
+                let x = noise(i * 0.07, frameCount * 0.00035) * width;
+                let y = noise(i * 0.11 + 600, frameCount * 0.00025) * height;
+                let b = 75 + sin(i + frameCount * 0.016) * 55;
+                fill(255, 250, 245, b * 0.25);
+                noStroke();
+                ellipse(x, y, 1.3, 1.3);
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
