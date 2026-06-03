@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彼岸花开 - 绚丽流转</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: #0a0508;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: rgba(10, 5, 8, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-right: 1px solid rgba(220, 20, 60, 0.3);
+            overflow-y: auto;
+            color: #f8f4f0;
+        }
+        
+        .sidebar h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #DC143C;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(220, 20, 60, 0.5);
+        }
+        
+        .sidebar .subtitle {
+            color: #b0a8a0;
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        
+        /* Control Sections */
+        .control-section {
+            margin-bottom: 32px;
+        }
+        
+        .control-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFD700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-section h3::before {
+            content: '✦';
+            color: #DC143C;
+            font-weight: bold;
+        }
+        
+        /* Seed Controls */
+        .seed-input {
+            width: 100%;
+            background: rgba(26, 10, 21, 0.8);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(220, 20, 60, 0.3);
+            text-align: center;
+            color: #f8f4f0;
+        }
+        
+        .seed-input:focus {
+            outline: none;
+            border-color: #DC143C;
+            box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.2);
+        }
+        
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        /* Parameter Controls */
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            color: #d0c8c0;
+            margin-bottom: 8px;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: rgba(220, 20, 60, 0.3);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #DC143C;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+            transition: all 0.2s ease;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #FF2400;
+        }
+        
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #a0a0a0;
+            min-width: 60px;
+            text-align: right;
+        }
+        
+        /* Buttons */
+        .button {
+            background: linear-gradient(135deg, #DC143C, #FF2400);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 20, 60, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #1a0a15;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .button.tertiary {
+            background: linear-gradient(135deg, #8B008B, #4B0082);
+            box-shadow: 0 4px 15px rgba(139, 0, 139, 0.3);
+        }
+        
+        .button.tertiary:hover {
+            box-shadow: 0 6px 20px rgba(139, 0, 139, 0.5);
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .button-row .button {
+            flex: 1;
+        }
+        
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+        
+        #canvas-container {
+            width: 100%;
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid rgba(220, 20, 60, 0.3);
+            }
+            
+            .canvas-area {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Control Sidebar -->
+        <div class="sidebar">
+            <h1>🌺 彼岸花开</h1>
+            <div class="subtitle">绚烂流转，生生世世<br>每一朵花都是命运的安排</div>
+
+            <!-- Seed Section -->
+            <div class="control-section">
+                <h3>命运种子</h3>
+                <input type="number" id="seed-input" class="seed-input" value="2024" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button secondary" onclick="previousSeed()">← 上一世</button>
+                    <button class="button secondary" onclick="nextSeed()">下一世 →</button>
+                </div>
+                <button class="button tertiary" onclick="randomSeedAndUpdate()">🎲 轮回转世</button>
+            </div>
+
+            <!-- Parameters Section -->
+            <div class="control-section">
+                <h3>花开参数</h3>
+                
+                <div class="control-group">
+                    <label>花瓣密度</label>
+                    <div class="slider-container">
+                        <input type="range" id="petalDensity" min="20" max="150" step="10" value="60" oninput="updateParam('petalDensity', this.value)">
+                        <span class="value-display" id="petalDensity-value">60</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>绽放速度</label>
+                    <div class="slider-container">
+                        <input type="range" id="bloomSpeed" min="0.5" max="3" step="0.1" value="1.5" oninput="updateParam('bloomSpeed', this.value)">
+                        <span class="value-display" id="bloomSpeed-value">1.5</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>风力强度</label>
+                    <div class="slider-container">
+                        <input type="range" id="windStrength" min="0" max="3" step="0.1" value="1" oninput="updateParam('windStrength', this.value)">
+                        <span class="value-display" id="windStrength-value">1.0</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>红黄比例</label>
+                    <div class="slider-container">
+                        <input type="range" id="colorRatio" min="0" max="1" step="0.05" value="0.7" oninput="updateParam('colorRatio', this.value)">
+                        <span class="value-display" id="colorRatio-value">0.7</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="control-section">
+                <h3>操作</h3>
+                <div class="button-row">
+                    <button class="button" onclick="resetParameters()">重置</button>
+                    <button class="button secondary" onclick="downloadCanvas()">下载</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(220, 20, 60, 0.2); color: #a0a8a0; font-size: 12px; line-height: 1.8;">
+                <p>✦ 彼岸花开，此岸凝望</p>
+                <p>✦ 花叶生生世世，永不相见</p>
+                <p>✦ 每一瓣都是命运的叹息</p>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="canvas-area">
+            <div id="canvas-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // LYCORIS BLOOM - 彼岸花开 ALGORITHM
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 2024,
+            petalDensity: 60,
+            bloomSpeed: 1.5,
+            windStrength: 1.0,
+            colorRatio: 0.7
+        };
+
+        let defaultParams = {...params};
+
+        // Color palette - 彼岸色谱
+        let colors = {
+            deepRed: [220, 20, 60],
+            brightRed: [255, 28, 0],
+            gold: [255, 215, 0],
+            white: [255, 250, 250],
+            darkPurple: [10, 5, 8]
+        };
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // PARTICLE SYSTEMS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let flowers = [];
+        let floatingPetals = [];
+        let stars = [];
+        let meteors = [];
+        let time = 0;
+
+        // Flower class
+        class Flower {
+            constructor(x, y) {
+                this.pos = createVector(x, y);
+                this.petals = [];
+                this.numPetals = floor(random(5, 9));
+                this.bloomProgress = 0;
+                this.bloomSpeed = params.bloomSpeed * random(0.8, 1.2);
+                this.state = 'blooming'; // blooming, full, falling, gone
+                this.rotation = random(TWO_PI);
+                this.maxSize = random(40, 80);
+                this.currentSize = 0;
+                this.glowPhase = random(TWO_PI);
+                
+                // Create petals
+                for (let i = 0; i < this.numPetals; i++) {
+                    let angle = (TWO_PI / this.numPetals) * i;
+                    this.petals.push({
+                        angle: angle,
+                        length: this.maxSize * random(0.8, 1.2),
+                        width: this.maxSize * random(0.15, 0.25),
+                        color: this.getColor(),
+                        opacity: 0,
+                        curve: random(-0.3, 0.3)
+                    });
+                }
+            }
+
+            getColor() {
+                let r = random();
+                if (r < params.colorRatio * 0.7) {
+                    return colors.deepRed;
+                } else if (r < params.colorRatio) {
+                    return colors.brightRed;
+                } else if (r < params.colorRatio + (1 - params.colorRatio) * 0.7) {
+                    return colors.gold;
+                } else {
+                    return colors.white;
+                }
+            }
+
+            update() {
+                this.glowPhase += 0.05;
+                
+                if (this.state === 'blooming') {
+                    this.bloomProgress += 0.015 * this.bloomSpeed;
+                    this.currentSize = this.easeOutElastic(this.bloomProgress) * this.maxSize;
+                    
+                    // Update petal opacities
+                    for (let petal of this.petals) {
+                        petal.opacity = min(0.8, this.bloomProgress * 1.5);
+                    }
+                    
+                    if (this.bloomProgress >= 1) {
+                        this.state = 'full';
+                        this.bloomProgress = 1;
+                        this.currentSize = this.maxSize;
+                    }
+                } else if (this.state === 'full') {
+                    // Stay full for a while, then start falling
+                    if (random() < 0.002 * params.bloomSpeed) {
+                        this.state = 'falling';
+                    }
+                } else if (this.state === 'falling') {
+                    // Release petals one by one
+                    if (random() < 0.02) {
+                        this.releasePetal();
+                    }
+                    
+                    // Fade out
+                    for (let petal of this.petals) {
+                        petal.opacity *= 0.995;
+                    }
+                    
+                    // Check if all petals released
+                    if (this.petals.length === 0) {
+                        this.state = 'gone';
+                    }
+                }
+            }
+
+            releasePetal() {
+                if (this.petals.length > 0) {
+                    let petalData = this.petals.pop();
+                    let petal = new Petal(
+                        this.pos.x,
+                        this.pos.y,
+                        petalData.length,
+                        petalData.width,
+                        petalData.color,
+                        petalData.angle + this.rotation
+                    );
+                    floatingPetals.push(petal);
+                }
+            }
+
+            easeOutElastic(t) {
+                if (t === 0 || t === 1) return t;
+                let p = 0.3;
+                return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+            }
+
+            display() {
+                if (this.state === 'gone') return;
+                
+                push();
+                translate(this.pos.x, this.pos.y);
+                rotate(this.rotation);
+                
+                // Glow effect
+                let glowIntensity = (sin(this.glowPhase) + 1) * 0.5 * 20 + 10;
+                drawingContext.shadowBlur = glowIntensity;
+                drawingContext.shadowColor = `rgba(255, 50, 50, 0.6)`;
+                
+                // Draw petals
+                for (let petal of this.petals) {
+                    this.drawPetal(petal);
+                }
+                
+                // Draw center
+                if (this.state === 'full' || this.state === 'blooming') {
+                    this.drawCenter();
+                }
+                
+                drawingContext.shadowBlur = 0;
+                pop();
+            }
+
+            drawPetal(petal) {
+                push();
+                rotate(petal.angle);
+                
+                let [r, g, b] = petal.color;
+                
+                // Draw petal shape using bezier curves
+                noStroke();
+                fill(r, g, b, petal.opacity * 255);
+                
+                beginShape();
+                // Top curve
+                bezierVertex(
+                    -petal.width * 0.5 + petal.curve * petal.length * 0.3, -petal.length * 0.1,
+                    -petal.width * 0.3 + petal.curve * petal.length * 0.5, -petal.length * 0.5,
+                    0, -petal.length * 0.9
+                );
+                bezierVertex(
+                    petal.width * 0.3 + petal.curve * petal.length * 0.5, -petal.length * 0.5,
+                    petal.width * 0.5 + petal.curve * petal.length * 0.3, -petal.length * 0.1,
+                    petal.width * 0.5, 0
+                );
+                // Bottom curve
+                bezierVertex(
+                    petal.width * 0.3, petal.length * 0.1,
+                    -petal.width * 0.3, petal.length * 0.1,
+                    -petal.width * 0.5, 0
+                );
+                endShape(CLOSE);
+                
+                // Inner highlight
+                fill(r + 50, g + 50, b + 50, petal.opacity * 100);
+                beginShape();
+                bezierVertex(
+                    -petal.width * 0.2, -petal.length * 0.2,
+                    -petal.width * 0.15, -petal.length * 0.5,
+                    0, -petal.length * 0.7
+                );
+                bezierVertex(
+                    petal.width * 0.15, -petal.length * 0.5,
+                    petal.width * 0.2, -petal.length * 0.2,
+                    petal.width * 0.15, 0
+                );
+                bezierVertex(
+                    0, petal.length * 0.05,
+                    -petal.width * 0.15, petal.length * 0.05,
+                    -petal.width * 0.2, 0
+                );
+                endShape(CLOSE);
+                
+                pop();
+            }
+
+            drawCenter() {
+                // Golden center
+                let [r, g, b] = colors.gold;
+                fill(r, g, b, 200);
+                ellipse(0, 0, this.maxSize * 0.15, this.maxSize * 0.15);
+                
+                // Inner dark center
+                fill(80, 40, 40, 150);
+                ellipse(0, 0, this.maxSize * 0.08, this.maxSize * 0.08);
+            }
+        }
+
+        // Floating petal class
+        class Petal {
+            constructor(x, y, length, width, color, angle) {
+                this.pos = createVector(x, y);
+                this.vel = createVector(random(-1, 1), random(-1, 0.5));
+                this.length = length * random(0.6, 1.0);
+                this.width = width * random(0.8, 1.2);
+                this.color = color;
+                this.rotation = angle + random(-0.5, 0.5);
+                this.rotationSpeed = random(-0.02, 0.02);
+                this.opacity = 0.9;
+                this.trail = [];
+                this.maxTrailLength = 8;
+            }
+
+            update() {
+                // Apply wind
+                let windAngle = noise(this.pos.x * 0.001, this.pos.y * 0.001, time * 0.0003) * TWO_PI;
+                let wind = p5.Vector.fromAngle(windAngle);
+                wind.mult(params.windStrength * 0.3);
+                
+                this.vel.add(wind);
+                this.vel.mult(0.98); // Friction
+                
+                // Store trail
+                if (frameCount % 3 === 0) {
+                    this.trail.push(this.pos.copy());
+                    if (this.trail.length > this.maxTrailLength) {
+                        this.trail.shift();
+                    }
+                }
+                
+                this.pos.add(this.vel);
+                this.rotation += this.rotationSpeed;
+                
+                // Fade out
+                if (this.pos.y > height * 0.9 || this.pos.x < 0 || this.pos.x > width) {
+                    this.opacity -= 0.02;
+                }
+            }
+
+            display() {
+                push();
+                
+                // Draw trail
+                if (this.trail.length > 1) {
+                    noFill();
+                    stroke(this.color[0], this.color[1], this.color[2], this.opacity * 50);
+                    strokeWeight(this.width * 0.3);
+                    beginShape();
+                    for (let p of this.trail) {
+                        vertex(p.x, p.y);
+                    }
+                    endShape();
+                }
+                
+                translate(this.pos.x, this.pos.y);
+                rotate(this.rotation);
+                
+                // Glow
+                drawingContext.shadowBlur = 10;
+                drawingContext.shadowColor = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, 0.5)`;
+                
+                // Draw petal
+                noStroke();
+                fill(this.color[0], this.color[1], this.color[2], this.opacity * 255);
+                
+                beginShape();
+                bezierVertex(
+                    -this.width * 0.5, 0,
+                    -this.width * 0.3, -this.length * 0.5,
+                    0, -this.length * 0.9
+                );
+                bezierVertex(
+                    this.width * 0.3, -this.length * 0.5,
+                    this.width * 0.5, 0,
+                    this.width * 0.5, this.length * 0.1
+                );
+                bezierVertex(
+                    this.width * 0.3, this.length * 0.2,
+                    -this.width * 0.3, this.length * 0.2,
+                    -this.width * 0.5, this.length * 0.1
+                );
+                endShape(CLOSE);
+                
+                drawingContext.shadowBlur = 0;
+                pop();
+            }
+
+            isDead() {
+                return this.opacity <= 0;
+            }
+        }
+
+        // Star class for background
+        class Star {
+            constructor() {
+                this.pos = createVector(random(width), random(height));
+                this.size = random(1, 3);
+                this.twinklePhase = random(TWO_PI);
+                this.twinkleSpeed = random(0.02, 0.08);
+                this.baseOpacity = random(30, 80);
+            }
+
+            update() {
+                this.twinklePhase += this.twinkleSpeed;
+            }
+
+            display() {
+                let opacity = this.baseOpacity + sin(this.twinklePhase) * 30;
+                fill(255, 250, 245, opacity);
+                noStroke();
+                ellipse(this.pos.x, this.pos.y, this.size, this.size);
+            }
+        }
+
+        // Meteor class
+        class Meteor {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.pos = createVector(random(width), random(-height * 0.5, 0));
+                this.vel = createVector(random(-0.5, 0.5), random(3, 6));
+                this.length = random(50, 150);
+                this.opacity = 255;
+                this.active = true;
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                
+                if (this.pos.y > height * 1.2 || this.pos.x < -100 || this.pos.x > width + 100) {
+                    this.active = false;
+                }
+            }
+
+            display() {
+                if (!this.active) return;
+                
+                push();
+                
+                // Glow
+                drawingContext.shadowBlur = 20;
+                drawingContext.shadowColor = 'rgba(255, 215, 0, 0.8)';
+                
+                // Draw meteor trail
+                let angle = this.vel.heading();
+                let tail = p5.Vector.fromAngle(angle);
+                tail.mult(-this.length);
+                
+                stroke(255, 215, 0, this.opacity);
+                strokeWeight(2);
+                line(this.pos.x, this.pos.y, this.pos.x + tail.x, this.pos.y + tail.y);
+                
+                // Bright head
+                fill(255, 255, 200);
+                noStroke();
+                ellipse(this.pos.x, this.pos.y, 4, 4);
+                
+                drawingContext.shadowBlur = 0;
+                pop();
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // P5.JS SETUP AND DRAW
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function setup() {
+            let canvas = createCanvas(windowWidth - 320, windowHeight);
+            if (windowWidth <= 768) {
+                canvas = createCanvas(windowWidth, windowHeight * 0.6);
+            }
+            canvas.parent('canvas-container');
+            
+            initializeSystem();
+        }
+
+        function initializeSystem() {
+            // Seed the randomness
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+
+            // Clear arrays
+            flowers = [];
+            floatingPetals = [];
+            stars = [];
+            meteors = [];
+
+            // Create stars
+            for (let i = 0; i < 80; i++) {
+                stars.push(new Star());
+            }
+
+            // Create initial flowers
+            for (let i = 0; i < 8; i++) {
+                let x = random(width * 0.1, width * 0.9);
+                let y = random(height * 0.1, height * 0.7);
+                flowers.push(new Flower(x, y));
+            }
+
+            // Reset time
+            time = 0;
+        }
+
+        function draw() {
+            // Draw gradient background
+            drawBackground();
+            
+            // Update and display stars
+            for (let star of stars) {
+                star.update();
+                star.display();
+            }
+
+            // Randomly spawn meteors
+            if (random() < 0.003) {
+                meteors.push(new Meteor());
+            }
+
+            // Update and display meteors
+            for (let i = meteors.length - 1; i >= 0; i--) {
+                meteors[i].update();
+                meteors[i].display();
+                if (!meteors[i].active) {
+                    meteors.splice(i, 1);
+                }
+            }
+
+            // Update and display flowers
+            for (let flower of flowers) {
+                flower.update();
+                flower.display();
+                
+                // Remove dead flowers
+                if (flower.state === 'gone') {
+                    flowers.splice(flowers.indexOf(flower), 1);
+                }
+            }
+
+            // Update and display floating petals
+            for (let i = floatingPetals.length - 1; i >= 0; i--) {
+                floatingPetals[i].update();
+                floatingPetals[i].display();
+                
+                if (floatingPetals[i].isDead()) {
+                    floatingPetals.splice(i, 1);
+                }
+            }
+
+            // Spawn new flowers
+            if (flowers.length < params.petalDensity / 10 && random() < 0.01) {
+                let x = random(width * 0.1, width * 0.9);
+                let y = random(height * 0.1, height * 0.6);
+                flowers.push(new Flower(x, y));
+            }
+
+            time += deltaTime;
+        }
+
+        function drawBackground() {
+            // Deep purple-black gradient
+            for (let y = 0; y < height; y++) {
+                let inter = map(y, 0, height, 0, 1);
+                let c = lerpColor(color(10, 5, 8), color(26, 10, 21), inter);
+                stroke(c);
+                line(0, y, width, y);
+            }
+        }
+
+        function windowResized() {
+            if (windowWidth <= 768) {
+                resizeCanvas(windowWidth, windowHeight * 0.6);
+            } else {
+                resizeCanvas(windowWidth - 320, windowHeight);
+            }
+            
+            // Recreate stars for new dimensions
+            stars = [];
+            for (let i = 0; i < 80; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI CONTROL HANDLERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(paramName + '-value').textContent = value;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SEED CONTROL FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                initializeSystem();
+            } else {
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function resetParameters() {
+            params = {...defaultParams};
+            
+            // Update UI elements
+            document.getElementById('petalDensity').value = params.petalDensity;
+            document.getElementById('petalDensity-value').textContent = params.petalDensity;
+            document.getElementById('bloomSpeed').value = params.bloomSpeed;
+            document.getElementById('bloomSpeed-value').textContent = params.bloomSpeed;
+            document.getElementById('windStrength').value = params.windStrength;
+            document.getElementById('windStrength-value').textContent = params.windStrength;
+            document.getElementById('colorRatio').value = params.colorRatio;
+            document.getElementById('colorRatio-value').textContent = params.colorRatio;
+            
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function downloadCanvas() {
+            saveCanvas('lycoris-bloom-' + params.seed, 'png');
+        }
+
+        // Initialize UI on load
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+        });
+    </script>
+</body>
+</html>
